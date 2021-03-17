@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Cube
+  - Wall
+  - Hider
+  - Seeker
   layers:
   - Default
   - TransparentFX
