@@ -1,7 +1,7 @@
 behaviors:
   SeekerBehavior:
     trainer_type: ppo
-    checkpoint_interval: 50000
+    checkpoint_interval: 100000
     hyperparameters:
       batch_size: 10000
       buffer_size: 50000
@@ -13,21 +13,21 @@ behaviors:
       learning_rate_schedule: linear
     network_settings:
       normalize: true
-      hidden_units: 256
+      hidden_units: 128
       num_layers: 2
       memory:
-        memory_size: 128
+        memory_size: 64
     reward_signals:
       extrinsic:
         gamma: 0.998
         strength: 1.0
-    max_steps: 3000000
+    max_steps: 30000000
     time_horizon: 160
     summary_freq: 10000
 
   HiderBehavior:
     trainer_type: ppo
-    checkpoint_interval: 50000
+    checkpoint_interval: 100000
     hyperparameters:
       batch_size: 10000
       buffer_size: 50000
@@ -39,14 +39,14 @@ behaviors:
       learning_rate_schedule: linear
     network_settings:
       normalize: true
-      hidden_units: 256
+      hidden_units: 128
       num_layers: 2
       memory:
-        memory_size: 128
+        memory_size: 64
     reward_signals:
       extrinsic:
         gamma: 0.998
         strength: 1.0
-    max_steps: 3000000
+    max_steps: 30000000
     time_horizon: 160
     summary_freq: 10000

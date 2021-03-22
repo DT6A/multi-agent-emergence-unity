@@ -53,11 +53,11 @@ public class AgentScript : Agent
         
         if (team == Team.Hider)
         {
-            this.transform.localPosition = new Vector3(Random.value * 4.25f + 0.25f, 0.5f, -Random.value * 4.25f - 0.25f);
+            this.transform.localPosition = new Vector3(2 * (Random.value * 4.25f + 0.25f), 0.5f, 2 * (-Random.value * 4.25f - 0.25f));
         }
         else
         {
-            this.transform.localPosition = new Vector3(-Random.value * 5f + 0.5f, 0.5f, Random.value * 9f - 4.5f);
+            this.transform.localPosition = new Vector3(2 * (-Random.value * 5f + 0.5f), 0.5f, 2 * (Random.value * 9f - 4.5f));
         }
         
         area.ResetEnv();
@@ -118,6 +118,8 @@ public class AgentScript : Agent
         //Debug.Log(controlSignal);
         rBody.AddForce(controlSignal * forceMultiplier);
         rBody.AddTorque(transform.up * rotationMultiplier * actions.ContinuousActions[2]);
+        
+        //Debug.Log("Reward:" + this.GetCumulativeReward().ToString() + team.ToString());
     }
     
     public override void Heuristic(in ActionBuffers actionsOut)
