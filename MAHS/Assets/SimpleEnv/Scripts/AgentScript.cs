@@ -1,13 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿
 using UnityEngine;
 
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Policies;
-using Debug = UnityEngine.Debug;
 
 public class AgentScript : Agent
 {
@@ -22,6 +19,9 @@ public class AgentScript : Agent
     public TrainingAreaScript area;
     private Rigidbody rBody;
     private ViewField vf;
+    private BufferSensorComponent bufferSensor;
+    private float forceMultiplier;
+    private float rotationMultiplier;
     BehaviorParameters behaviorParameters;
     [HideInInspector]
     public Team team;
@@ -29,35 +29,37 @@ public class AgentScript : Agent
     {
         rBody = GetComponent<Rigidbody>();
         vf = GetComponent<ViewField>();
+        bufferSensor = GetComponent<BufferSensorComponent>();
         behaviorParameters = GetComponent<BehaviorParameters>();
-        
-        if (behaviorParameters.TeamId == (int) Team.Hider)
-        {
-            team = Team.Hider;
-        }
-        else
-        {
-            team = Team.Seeker; 
-        }
 
-        this.MaxStep = area.episodeLength;
-        
+        team = behaviorParameters.TeamId == (int) Team.Hider ? Team.Hider : Team.Seeker;
+
+        MaxStep = area.episodeLength;
+        forceMultiplier = area.agentsForceMultiplier;
+        rotationMultiplier = area.agentsRotationMultiplier;
         area.agents.Add(this);
     }
     
     public override void OnEpisodeBegin()
     {
-        this.rBody.angularVelocity = Vector3.zero;
-        this.rBody.velocity = Vector3.zero;
-        this.transform.Rotate(0,Random.value * 360 - 180f, 0);
+        rBody.angularVelocity = Vector3.zero;
+        rBody.velocity = Vector3.zero;
+        transform.Rotate(0,Random.value * 360 - 180f, 0);
         
         if (team == Team.Hider)
         {
-            this.transform.localPosition = new Vector3(2 * (Random.value * 4.25f + 0.25f), 0.5f, 2 * (-Random.value * 4.25f - 0.25f));
+            transform.localPosition =
+                new Vector3(2 * (Random.value * area.spawnInsideBoxWidth + area.spawnInsideBoxOffset), 0.5f,
+                    2 * (-Random.value * area.spawnInsideBoxWidth - area.spawnInsideBoxOffset));
         }
         else
         {
-            this.transform.localPosition = new Vector3(2 * (-Random.value * 5f + 0.5f), 0.5f, 2 * (Random.value * 9f - 4.5f));
+            Vector3 pos = new Vector3(2 * (Random.value * area.spawnOutsideBoxWidth - area.spawnOutsideBoxOffset), 0.5f,
+                2 * (Random.value * area.spawnOutsideBoxWidth - area.spawnOutsideBoxOffset));
+            while (pos.x > 0 && pos.z < 0)
+                pos = new Vector3(2 * (Random.value * area.spawnOutsideBoxWidth - area.spawnOutsideBoxOffset), 0.5f,
+                    2 * (Random.value * area.spawnOutsideBoxWidth - area.spawnOutsideBoxOffset));
+            transform.localPosition = pos;
         }
         
         area.ResetEnv();
@@ -66,49 +68,48 @@ public class AgentScript : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         //Debug.Log(this.GetCumulativeReward());
-        // Agent role
-        sensor.AddOneHotObservation((int)team, NUM_TEAMS);
-        
-        // Agent position
-        sensor.AddObservation(transform.localPosition.x);
-        sensor.AddObservation(transform.localPosition.z);
-        // Agent velocity
-        sensor.AddObservation(rBody.velocity.x);
-        sensor.AddObservation(rBody.velocity.z);
 
-        Quaternion opponentInfo = new Quaternion(0, 0, 0, 0);
+        // Agent position
+        var position = transform.localPosition;
+        sensor.AddObservation(position.x);
+        sensor.AddObservation(position.z);
+        // Agent velocity
+        var selfVelocity = rBody.velocity;
+        sensor.AddObservation(selfVelocity.x);
+        sensor.AddObservation(selfVelocity.z);
+
         foreach (GameObject obj in vf.collectVisibleObjects())
         {
-            if (obj.CompareTag("Hider") || obj.CompareTag("Seeker"))
+            if (!obj.CompareTag("Hider") && !obj.CompareTag("Seeker")) continue;
+            //Debug.Log(obj.tag);
+            if (this.team == Team.Seeker && obj.CompareTag("Hider"))
             {
-                if (team == Team.Seeker)
-                {
-                    area.isAnyHiderSeen = true;
-                }
-
-                Rigidbody otherAgentRigidbody = obj.GetComponent<Rigidbody>();
-                // Opponent position
-                opponentInfo.x =  obj.transform.localPosition.x;
-                opponentInfo.y =  obj.transform.localPosition.z;
-                // Opponent velocity
-                opponentInfo.z = otherAgentRigidbody.velocity.x;
-                opponentInfo.w = otherAgentRigidbody.velocity.z;
-                break;
+                area.isAnyHiderSeen = true;
             }
+
+            float[] observations = new float[5];
+            Rigidbody otherAgentRigidbody = obj.GetComponent<Rigidbody>();
+            // Other agent position
+            var localPosition = obj.transform.localPosition;
+            observations[0] = localPosition.x / 10.0f;
+            observations[1] = localPosition.z / 10.0f;
+            // Other agent velocity
+            var velocity = otherAgentRigidbody.velocity;
+            observations[2] = velocity.x / 10.0f;
+            observations[3] = velocity.z / 10.0f;
+            // Other agent team
+            if (obj.CompareTag("Hider"))
+                observations[4] = (float)Team.Hider;
+            else
+                observations[4] = (float)Team.Seeker;
+            bufferSensor.AppendObservation(observations);
         }
-        
-        sensor.AddObservation(opponentInfo.x);
-        sensor.AddObservation(opponentInfo.y);
-        sensor.AddObservation(opponentInfo.z);
-        sensor.AddObservation(opponentInfo.w);
     }
     
-    public float forceMultiplier = 10.0f;
-    public float rotationMultiplier = 1.0f;
     public override void OnActionReceived(ActionBuffers actions)
     {
         //Debug.Log(this.StepCount);
-        if (team == Team.Seeker && this.StepCount <= area.preparingPhaseLength)
+        if (team == Team.Seeker && StepCount <= area.preparingPhaseLength)
             return;
         
         Vector3 controlSignal = Vector3.zero;
@@ -118,7 +119,10 @@ public class AgentScript : Agent
         //Debug.Log(controlSignal);
         rBody.AddForce(controlSignal * forceMultiplier);
         rBody.AddTorque(transform.up * rotationMultiplier * actions.ContinuousActions[2]);
-        
+
+        Vector3 lPos = transform.localPosition; 
+        if (lPos.x < -10.0 || lPos.x > 10.0 || lPos.z < -10.0 || lPos.z > 10.0)
+            AddReward(area.penaltyForLeaving * area.rewardScale);
         //Debug.Log("Reward:" + this.GetCumulativeReward().ToString() + team.ToString());
     }
     

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
+using System.Linq;
 using Unity.MLAgents;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -12,6 +10,18 @@ public class TrainingAreaScript : MonoBehaviour
     public bool isAnyHiderSeen;
     [HideInInspector]
     public List<AgentScript> agents;
+
+    public float agentsForceMultiplier = 50.0f;
+    public float agentsRotationMultiplier = 3.0f;
+
+    public float spawnInsideBoxWidth = 4.25f;
+    public float spawnInsideBoxOffset = 0.25f;
+    public float spawnOutsideBoxWidth = 9f;
+    public float spawnOutsideBoxOffset = 4.5f;
+
+    public float rewardScale = 0.1f;
+    public float penaltyForLeaving = -5.0f;
+    
     void Awake()
     {
         Academy.Instance.OnEnvironmentReset += ResetEnv;
@@ -25,20 +35,19 @@ public class TrainingAreaScript : MonoBehaviour
     public Transform box2;
     public void ResetEnv()
     {
-        box1.transform.localPosition = new Vector3(Random.value * 4.25f + 0.25f, 0.5f, -Random.value * 4.25f - 0.25f);
-        box2.transform.localPosition = new Vector3(Random.value * 4.25f + 0.25f, 0.5f, -Random.value * 4.25f - 0.25f);
+        box1.transform.localPosition = new Vector3(Random.value * spawnInsideBoxWidth + spawnInsideBoxOffset, 0.5f,
+            -Random.value * spawnInsideBoxWidth - spawnInsideBoxOffset);
+        box2.transform.localPosition = new Vector3(Random.value * spawnInsideBoxWidth + spawnInsideBoxOffset, 0.5f,
+            -Random.value * spawnInsideBoxWidth - spawnInsideBoxOffset);
     }
 
     void PreStep(int i)
     {
-        float hidersReward = 1.0f;
-        if (isAnyHiderSeen)
-            hidersReward = -1.0f;
+        var hidersReward = isAnyHiderSeen ? -1.0f : 1.0f;
+        hidersReward *= rewardScale;
         
-        foreach (AgentScript agent in agents)
+        foreach (var agent in agents.TakeWhile(agent => agent.StepCount >= preparingPhaseLength))
         {
-            if (agent.StepCount < preparingPhaseLength)
-                break;
             if (agent.team == AgentScript.Team.Hider)
                 agent.AddReward(hidersReward);
             else

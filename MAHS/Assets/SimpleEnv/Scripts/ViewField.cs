@@ -8,6 +8,8 @@ public class ViewField : MonoBehaviour
     public float viewAngle = 135.0f;
     public float viewRadius = 10.0f;
 
+    public String ignoreTag = "Wall";
+    
     public List<GameObject> collectVisibleObjects()
     {
         List<GameObject> objects = new List<GameObject>();
@@ -18,12 +20,11 @@ public class ViewField : MonoBehaviour
             Transform trans = colliders[i].transform;
             Vector3 dirToTarget = (trans.position - transform.position).normalized;
 
-            if (!colliders[i].CompareTag("Wall")  && Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2.0f)
+            if (!colliders[i].CompareTag(ignoreTag)  && Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2.0f)
             {
                 float dist = Vector3.Distance(trans.position, transform.position);
-                RaycastHit hit;
-                
-                if (Physics.Raycast(transform.position, dirToTarget, out hit, dist))
+
+                if (Physics.Raycast(transform.position, dirToTarget, out var hit, dist))
                 {
                     if (colliders[i].gameObject.GetInstanceID() == hit.transform.gameObject.GetInstanceID())
                         objects.Add(colliders[i].gameObject);
