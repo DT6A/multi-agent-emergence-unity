@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Linq;
 using UnityEngine;
 
 using Unity.MLAgents;
@@ -32,7 +33,7 @@ public class AgentScript : Agent
 
     public String seekerTag = "Seeker";
     public String hiderTag = "Hider";
-    public String boxTag = "Cube";
+    public String cubeTag = "Cube";
     public String rampTag = "Ramp";
     
     [HideInInspector]
@@ -113,17 +114,16 @@ public class AgentScript : Agent
         else
             sensor.AddObservation(area.preparingPhaseLength - StepCount);
         
-        foreach (GameObject obj in viewField.collectVisibleObjects())
+        foreach (var obj in viewField.collectVisibleObjects().Where(obj =>
+            obj.CompareTag(hiderTag) || obj.CompareTag(seekerTag) || obj.CompareTag(cubeTag) || obj.CompareTag(rampTag)))
         {
-            if (!obj.CompareTag(hiderTag) && !obj.CompareTag(seekerTag) 
-                                          && !obj.CompareTag(boxTag) && !obj.CompareTag(rampTag)) continue;
-            //Debug.Log(obj.tag);
-            if (team == Team.Seeker && obj.CompareTag("Hider"))
+            Debug.Log(obj.tag);
+            if (team == Team.Seeker && obj.CompareTag(hiderTag))
             {
                 area.isAnyHiderSeen = true;
             }
 
-            float[] observations = new float[7];
+            float[] observations = new float[8];
             Rigidbody objectRigidBody = obj.GetComponent<Rigidbody>();
             // Other object position
             var localPosition = obj.transform.localPosition;
@@ -134,12 +134,14 @@ public class AgentScript : Agent
             observations[2] = velocity.x / 10.0f;
             observations[3] = velocity.z / 10.0f;
             // Other object team
-            if (obj.CompareTag("Hider"))
+            if (obj.CompareTag(hiderTag))
                 observations[4] = 1.0f;
-            else if (obj.CompareTag("Seeker"))
+            else if (obj.CompareTag(seekerTag))
                 observations[5] = 1.0f;
-            else
+            else if (obj.CompareTag(cubeTag))
                 observations[6] = 1.0f;
+            else
+                observations[7] = 1.0f;
             _bufferSensor.AppendObservation(observations);
         }
     }
@@ -186,7 +188,7 @@ public class AgentScript : Agent
             
             foreach (GameObject obj in viewField.collectVisibleObjects())
             {
-                if (!obj.CompareTag("Cube")) continue;
+                if (!obj.CompareTag(cubeTag) && !obj.CompareTag(rampTag)) continue;
 
                 float dist = Vector3.Distance(transform.localPosition, obj.transform.localPosition);
                 if (dist < minDistToCube)

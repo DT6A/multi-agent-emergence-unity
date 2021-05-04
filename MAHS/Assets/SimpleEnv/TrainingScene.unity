@@ -154,6 +154,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 99483365104937009, guid: b462cdb87d4b20442b059847d9c08cec,
         type: 3}
+      propertyPath: m_ObservableSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 99483365104937009, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
       propertyPath: m_MaxNumObservables
       value: 6
       objectReference: {fileID: 0}
@@ -171,6 +176,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: -154.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2753140893049413956, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323991425834188353, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839912088872465426, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
+      propertyPath: m_ObservableSize
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5839912088872465426, guid: b462cdb87d4b20442b059847d9c08cec,
         type: 3}
@@ -242,10 +262,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6753614327889271673, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
+      propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6753614328002853155, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
+      propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6991233107543877549, guid: b462cdb87d4b20442b059847d9c08cec,
         type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7200674948191397885, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
+      propertyPath: m_ObservableSize
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7200674948191397885, guid: b462cdb87d4b20442b059847d9c08cec,
         type: 3}
@@ -271,6 +306,11 @@ PrefabInstance:
         type: 3}
       propertyPath: preparingPhaseLength
       value: 160
+      objectReference: {fileID: 0}
+    - target: {fileID: 8466656246886054448, guid: b462cdb87d4b20442b059847d9c08cec,
+        type: 3}
+      propertyPath: m_ObservableSize
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8466656246886054448, guid: b462cdb87d4b20442b059847d9c08cec,
         type: 3}
