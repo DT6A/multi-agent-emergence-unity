@@ -16,21 +16,24 @@ public class AgentScript : Agent
         Seeker = 1
     }
 
-    private const int NUM_TEAMS = (int) Team.Seeker;
-    
     public TrainingAreaScript area;
 
     private Rigidbody rBody;
     private FixedJoint fJoint;
-    private ViewField vf;
-    private MovableScript _carryingMovable = null;
-    
+    private ViewField viewField;
+    private MovableScript _carryingMovable;
+    private BehaviorParameters behaviorParameters;
     private BufferSensorComponent _bufferSensor;
     
     private float _forceMultiplier;
     private float _rotationMultiplier;
-    
-    BehaviorParameters behaviorParameters;
+
+    private bool isPrepared = false;
+
+    public String seekerTag = "Seeker";
+    public String hiderTag = "Hider";
+    public String boxTag = "Cube";
+    public String rampTag = "Ramp";
     
     [HideInInspector]
     public Team team;
@@ -38,7 +41,7 @@ public class AgentScript : Agent
     {
         rBody = GetComponent<Rigidbody>();
         fJoint = GetComponent<FixedJoint>();
-        vf = GetComponent<ViewField>();
+        viewField = GetComponent<ViewField>();
         _bufferSensor = GetComponent<BufferSensorComponent>();
         behaviorParameters = GetComponent<BehaviorParameters>();
 
@@ -50,6 +53,11 @@ public class AgentScript : Agent
         area.agents.Add(this);
     }
 
+    public bool getIsPrepared()
+    {
+        return isPrepared;
+    }
+    
     private bool IsNoCollision()
     {
         Collider[] colliders = Physics.OverlapSphere(transform.position, rBody.transform.localScale.x - 0.001f);
@@ -59,6 +67,7 @@ public class AgentScript : Agent
     
     public override void OnEpisodeBegin()
     {
+        isPrepared = false;
         if (_carryingMovable != null)
             _carryingMovable.Drop();
         _carryingMovable = null;
@@ -76,24 +85,18 @@ public class AgentScript : Agent
         while (area.maxRespawnAttempts == attempts || !IsNoCollision() && attempts > 0)
         {
             attempts--;
-            if (team == Team.Hider)
-            {
-                transform.localPosition = area.GetVectorInsideRoom();
-            }
-            else
-            {
-                transform.localPosition = area.GetVectorOutsideRoom();
-            }
+            transform.localPosition = team == Team.Hider ? area.GetVectorInsideRoom() : area.GetVectorOutsideRoom();
             Physics.SyncTransforms();
         }
         Physics.SyncTransforms();
         //Debug.Log(attempts);
-        area.preparedAgents++;
+        isPrepared = true;
         area.ResetEnv();
     }
-    
+
     public override void CollectObservations(VectorSensor sensor)
     {
+        isPrepared = false;
         //Debug.Log(this.GetCumulativeReward());
 
         // Agent position
@@ -110,11 +113,12 @@ public class AgentScript : Agent
         else
             sensor.AddObservation(area.preparingPhaseLength - StepCount);
         
-        foreach (GameObject obj in vf.collectVisibleObjects())
+        foreach (GameObject obj in viewField.collectVisibleObjects())
         {
-            if (!obj.CompareTag("Hider") && !obj.CompareTag("Seeker") && !obj.CompareTag("Cube")) continue;
+            if (!obj.CompareTag(hiderTag) && !obj.CompareTag(seekerTag) 
+                                          && !obj.CompareTag(boxTag) && !obj.CompareTag(rampTag)) continue;
             //Debug.Log(obj.tag);
-            if (this.team == Team.Seeker && obj.CompareTag("Hider"))
+            if (team == Team.Seeker && obj.CompareTag("Hider"))
             {
                 area.isAnyHiderSeen = true;
             }
@@ -180,7 +184,7 @@ public class AgentScript : Agent
             GameObject nearestCube = null;
             float minDistToCube = Single.MaxValue;
             
-            foreach (GameObject obj in vf.collectVisibleObjects())
+            foreach (GameObject obj in viewField.collectVisibleObjects())
             {
                 if (!obj.CompareTag("Cube")) continue;
 
@@ -197,21 +201,30 @@ public class AgentScript : Agent
                 return;
 
             MovableScript movableScript = nearestCube.GetComponent<MovableScript>();
-            if (action == 2)
+            
+            switch (action)
             {
-                if (!movableScript.Grab(rBody))
+                case 2:
+                {
+                    if (!movableScript.Grab(rBody))
+                        return;
+                    _carryingMovable = movableScript;
+                    fJoint = gameObject.AddComponent<FixedJoint>();
+                    fJoint.connectedBody = nearestCube.GetComponent<Rigidbody>();
+                    break;
+                }
+                case 3:
+                {
+                    movableScript.Unlock(team);
+                    break;
+                }
+                case 4:
+                {
+                    movableScript.Lock(team);
+                    break;
+                }       
+                default:
                     return;
-                _carryingMovable = movableScript;
-                fJoint = gameObject.AddComponent<FixedJoint>();
-                fJoint.connectedBody = nearestCube.GetComponent<Rigidbody>();
-            }
-            else if (action == 3)
-            {
-                movableScript.Unlock(team);
-            }
-            else if (action == 4)
-            {
-                movableScript.Lock(team);
             }
         }
     }

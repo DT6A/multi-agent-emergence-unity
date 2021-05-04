@@ -21,12 +21,11 @@ public class MovableScript : MonoBehaviour
     public ObjectType objectType;
    
     private Material material;
-    [HideInInspector] public bool isSpawnNeeded = false;
     private Rigidbody rBody;
 
-    private bool isLocked = false;
-    private bool isGrabed = false;
-    private AgentScript.Team? teamLocked = null;
+    private bool isLocked;
+    private bool isGrabed;
+    private AgentScript.Team? teamLocked;
 
     private RigidbodyConstraints boxConstraints = RigidbodyConstraints.FreezePositionY |
                                                   RigidbodyConstraints.FreezeRotationX |
@@ -45,14 +44,13 @@ public class MovableScript : MonoBehaviour
 
     public void Lock(AgentScript.Team team)
     {
-        if (!isLocked && !isGrabed)
-        {
-            isLocked = true;
-            teamLocked = team;
+        if (isLocked || isGrabed) return;
+        
+        isLocked = true;
+        teamLocked = team;
 
-            material.color = team == AgentScript.Team.Hider ? hiderColor : seekerColor;
-            rBody.isKinematic = true;
-        }
+        material.color = team == AgentScript.Team.Hider ? hiderColor : seekerColor;
+        rBody.isKinematic = true;
     }
     
     public void Unlock(AgentScript.Team team)

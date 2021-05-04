@@ -8,6 +8,7 @@ TagManager:
   - Wall
   - Hider
   - Seeker
+  - Ramp
   layers:
   - Default
   - TransparentFX

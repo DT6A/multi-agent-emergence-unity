@@ -490,6 +490,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ramp
       objectReference: {fileID: 0}
+    - target: {fileID: 3009834451943851531, guid: 8e872ad9032f57b43b43eddcbf64fa6b,
+        type: 3}
+      propertyPath: m_TagString
+      value: Ramp
+      objectReference: {fileID: 0}
     - target: {fileID: 3009834451943851532, guid: 8e872ad9032f57b43b43eddcbf64fa6b,
         type: 3}
       propertyPath: m_Material

@@ -12,8 +12,6 @@ public class TrainingAreaScript : MonoBehaviour
     [HideInInspector]
     public List<AgentScript> agents;
 
-    public int preparedAgents = 0;
-
     public float agentsForceMultiplier = 50.0f;
     public float agentsRotationMultiplier = 3.0f;
 
@@ -50,11 +48,9 @@ public class TrainingAreaScript : MonoBehaviour
     public int maxRespawnAttempts = 10;
     public void ResetEnv()
     {
-        if (preparedAgents != agents.Count)
+        if (!agents.All(agent => agent.getIsPrepared()))
             return;
-        preparedAgents = 0;
-        
-        
+
         // Randomize holes in the room walls
         // First pair of walls
         var transform1 = wall1.transform;
