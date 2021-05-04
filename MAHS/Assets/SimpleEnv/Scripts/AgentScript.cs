@@ -54,18 +54,11 @@ public class AgentScript : Agent
         area.agents.Add(this);
     }
 
-    public bool getIsPrepared()
+    public bool GetIsPrepared()
     {
         return isPrepared;
     }
-    
-    private bool IsNoCollision()
-    {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, rBody.transform.localScale.x - 0.001f);
 
-        return colliders.Length == 0;
-    }
-    
     public override void OnEpisodeBegin()
     {
         isPrepared = false;
@@ -83,7 +76,7 @@ public class AgentScript : Agent
         transform.Rotate(0,Random.value * 360 - 180f, 0);
 
         int attempts = area.maxRespawnAttempts;
-        while (area.maxRespawnAttempts == attempts || !IsNoCollision() && attempts > 0)
+        while (area.maxRespawnAttempts == attempts || area.AnyCollisionDetected(transform) && attempts > 0)
         {
             attempts--;
             transform.localPosition = team == Team.Hider ? area.GetVectorInsideRoom() : area.GetVectorOutsideRoom();

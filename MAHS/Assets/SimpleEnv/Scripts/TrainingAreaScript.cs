@@ -33,7 +33,8 @@ public class TrainingAreaScript : MonoBehaviour
     public int episodeLength = 1000;
     public int preparingPhaseLength = 400;
 
-    public float roomHolesSize = 1.7f;
+    public float roomHolesSize = 2.3f;
+    public float intersectionDistance = 2.3f;
     
     public MovableScript box1;
     public MovableScript box2;
@@ -46,9 +47,27 @@ public class TrainingAreaScript : MonoBehaviour
     public Transform wall4;
     
     public int maxRespawnAttempts = 10;
+
+    private bool CollisionBetweenTwo(Transform objectTransform, Transform otherTransform)
+    {
+        return !otherTransform.transform.Equals(objectTransform) &&
+               Vector3.Distance(objectTransform.localPosition, otherTransform.localPosition) <= intersectionDistance;
+    }
+    public bool AnyCollisionDetected(Transform objectTransform)
+    {
+        if (agents.Any(agent => CollisionBetweenTwo(objectTransform, agent.transform)))
+        {
+            return true;
+        }
+
+        return CollisionBetweenTwo(objectTransform, box1.transform) ||
+               CollisionBetweenTwo(objectTransform, box2.transform) ||
+               CollisionBetweenTwo(objectTransform, ramp.transform);
+    }
+    
     public void ResetEnv()
     {
-        if (!agents.All(agent => agent.getIsPrepared()))
+        if (!agents.All(agent => agent.GetIsPrepared()))
             return;
 
         // Randomize holes in the room walls

@@ -26,14 +26,7 @@ public class MovableScript : MonoBehaviour
     private bool isLocked;
     private bool isGrabed;
     private AgentScript.Team? teamLocked;
-
-    private RigidbodyConstraints boxConstraints = RigidbodyConstraints.FreezePositionY |
-                                                  RigidbodyConstraints.FreezeRotationX |
-                                                  RigidbodyConstraints.FreezeRotationZ;
     
-    private RigidbodyConstraints rampConstraints = RigidbodyConstraints.FreezePositionY |
-                                                  RigidbodyConstraints.FreezeRotationX |
-                                                  RigidbodyConstraints.FreezeRotationY;
     private void ResetLock()
     {
         isLocked = false;
@@ -101,9 +94,8 @@ public class MovableScript : MonoBehaviour
         }
 
         Physics.SyncTransforms();
-        Collider[] hitColliders = Physics.OverlapBox(transform.position, transform.localScale / 2 * 0.999f);
         int attempts = area.maxRespawnAttempts;
-        while (hitColliders.Length != 0 && attempts > 0)
+        while (area.AnyCollisionDetected(transform) && attempts > 0)
         {
             transform.localPosition = objectType == ObjectType.Box ? 
                 area.GetVectorInsideRoom() :
@@ -113,7 +105,6 @@ public class MovableScript : MonoBehaviour
             else
                 transform.Rotate(0, 0, Random.value * 360 - 180f);
             Physics.SyncTransforms();
-            hitColliders = Physics.OverlapBox(transform.position, transform.localScale / 2 * 0.999f);
             attempts--;
         }
         rBody.angularVelocity = Vector3.zero;
