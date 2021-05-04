@@ -117,7 +117,7 @@ public class AgentScript : Agent
         foreach (var obj in viewField.collectVisibleObjects().Where(obj =>
             obj.CompareTag(hiderTag) || obj.CompareTag(seekerTag) || obj.CompareTag(cubeTag) || obj.CompareTag(rampTag)))
         {
-            Debug.Log(obj.tag);
+            //Debug.Log(obj.tag);
             if (team == Team.Seeker && obj.CompareTag(hiderTag))
             {
                 area.isAnyHiderSeen = true;
