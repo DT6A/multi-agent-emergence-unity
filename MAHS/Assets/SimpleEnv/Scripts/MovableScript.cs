@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class MovableScript : MonoBehaviour
 {
-    public TrainingAreaScript area;
-    
     public Color defaultColor = new Color(1.0f, 0.7960784f, 0.1529412f);
     public Color hiderColor = new Color(33.0f / 255.0f, 150.0f / 255.0f, 243.0f / 255.0f);
     public Color seekerColor = new Color(141.0f / 255.0f, 109.0f / 255.0f, 200.0f / 255.0f);
@@ -20,35 +15,37 @@ public class MovableScript : MonoBehaviour
 
     public ObjectType objectType;
    
-    private Material material;
-    private Rigidbody rBody;
-
-    private bool isLocked;
-    private bool isGrabed;
-    private AgentScript.Team? teamLocked;
+    private bool _isLocked;
+    private bool _isGrabed;
+    private AgentScript.Team? _teamLocked;
+    private Material _material;
+    private Rigidbody _rBody;
+    private ObjectsManager _manager; 
+    private Config _config;    
     
+
     private void ResetLock()
     {
-        isLocked = false;
-        teamLocked = null;
-        material.color = defaultColor;
-        rBody.isKinematic = false;
+        _isLocked = false;
+        _teamLocked = null;
+        _material.color = defaultColor;
+        _rBody.isKinematic = false;
     }
 
     public void Lock(AgentScript.Team team)
     {
-        if (isLocked || isGrabed) return;
+        if (_isLocked || _isGrabed) return;
         
-        isLocked = true;
-        teamLocked = team;
+        _isLocked = true;
+        _teamLocked = team;
 
-        material.color = team == AgentScript.Team.Hider ? hiderColor : seekerColor;
-        rBody.isKinematic = true;
+        _material.color = team == AgentScript.Team.Hider ? hiderColor : seekerColor;
+        _rBody.isKinematic = true;
     }
     
     public void Unlock(AgentScript.Team team)
     {
-        if (isLocked && team == teamLocked)
+        if (_isLocked && team == _teamLocked)
         {
             ResetLock();
         }
@@ -56,11 +53,10 @@ public class MovableScript : MonoBehaviour
 
     public bool Grab(Rigidbody agentRigidbody)
     {
-        if (!isLocked && !isGrabed)
+        if (!_isLocked && !_isGrabed)
         {
-            //rBody.constraints = RigidbodyConstraints.None;
-            rBody.mass = 0.02f;
-            isGrabed = true;
+            _rBody.mass = 0.02f;
+            _isGrabed = true;
             return true;
         }
 
@@ -69,18 +65,21 @@ public class MovableScript : MonoBehaviour
 
     public void Drop()
     {
-        //rBody.constraints = objectType == ObjectType.Box ? boxConstraints : rampConstraints;
-        isGrabed = false;
-        rBody.mass = 0.5f;
+        _isGrabed = false;
+        _rBody.mass = 0.5f;
     }
     
     public void Respawn()
     {
+        if (_config == null)
+        {
+            _config = _manager.GetConfig();
+        }
         ResetLock();
         Drop();
         transform.localPosition = objectType == ObjectType.Box ?
-            area.GetVectorInsideRoom() :
-            area.GetVectorOutsideRoom();
+            _manager.GetSpawnHelper().GetVectorInsideRoom() :
+            _manager.GetSpawnHelper().GetVectorOutsideRoom();
 
         if (objectType == ObjectType.Box)
         {
@@ -94,12 +93,12 @@ public class MovableScript : MonoBehaviour
         }
 
         Physics.SyncTransforms();
-        int attempts = area.maxRespawnAttempts;
-        while (area.AnyCollisionDetected(transform) && attempts > 0)
+        int attempts = _config.maxRespawnAttempts;
+        while (_manager.GetSpawnHelper().AnyCollisionDetected(transform) && attempts > 0)
         {
             transform.localPosition = objectType == ObjectType.Box ? 
-                area.GetVectorInsideRoom() :
-                area.GetVectorOutsideRoom();
+                _manager.GetSpawnHelper().GetVectorInsideRoom() :
+                _manager.GetSpawnHelper().GetVectorOutsideRoom();
             if (objectType == ObjectType.Box)
                 transform.Rotate(0, Random.value * 360 - 180f, 0);
             else
@@ -107,8 +106,8 @@ public class MovableScript : MonoBehaviour
             Physics.SyncTransforms();
             attempts--;
         }
-        rBody.angularVelocity = Vector3.zero;
-        rBody.velocity = Vector3.zero;
+        _rBody.angularVelocity = Vector3.zero;
+        _rBody.velocity = Vector3.zero;
         Physics.SyncTransforms();
         //Debug.Log(attempts);
         //isSpawnNeeded = false;
@@ -117,9 +116,11 @@ public class MovableScript : MonoBehaviour
     
     void Start()
     {
-        rBody = GetComponentInChildren<Rigidbody>();
-        material = GetComponentInChildren<MeshRenderer>().material;
-        Respawn();
+        _rBody = GetComponentInChildren<Rigidbody>();
+        _material = GetComponentInChildren<MeshRenderer>().material;
+        _manager = transform.parent.Find("ManagerObject").GetComponent<ObjectsManager>();
+        _config = _manager.GetConfig(); 
+        //Respawn();
     }
 
     // Update is called once per frame
@@ -134,15 +135,5 @@ public class MovableScript : MonoBehaviour
             Unlock(AgentScript.Team.Seeker);
         if (Input.GetKey(KeyCode.P))
             Lock(AgentScript.Team.Seeker);
-    }
-
-    private void FixedUpdate()
-    {
-        /*
-        if (IsNeedSpawn)
-        {
-            Respawn();
-        }
-        */
     }
 }

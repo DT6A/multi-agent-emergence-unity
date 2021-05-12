@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 
@@ -17,19 +16,16 @@ public class AgentScript : Agent
         Seeker = 1
     }
 
-    public TrainingAreaScript area;
-
-    private Rigidbody rBody;
-    private FixedJoint fJoint;
-    private ViewField viewField;
+    private Rigidbody _rBody;
+    private FixedJoint _fJoint;
+    private ViewField _viewField;
     private MovableScript _carryingMovable;
-    private BehaviorParameters behaviorParameters;
+    private BehaviorParameters _behaviorParameters;
     private BufferSensorComponent _bufferSensor;
-    
-    private float _forceMultiplier;
-    private float _rotationMultiplier;
+    private ObjectsManager _manager;
+    private Config _config;
 
-    private bool isPrepared = false;
+    private bool _isPrepared;
 
     public String seekerTag = "Seeker";
     public String hiderTag = "Hider";
@@ -40,57 +36,57 @@ public class AgentScript : Agent
     public Team team;
     void Start()
     {
-        rBody = GetComponent<Rigidbody>();
-        fJoint = GetComponent<FixedJoint>();
-        viewField = GetComponent<ViewField>();
+        _rBody = GetComponent<Rigidbody>();
+        _fJoint = GetComponent<FixedJoint>();
+        _viewField = GetComponent<ViewField>();
         _bufferSensor = GetComponent<BufferSensorComponent>();
-        behaviorParameters = GetComponent<BehaviorParameters>();
+        _behaviorParameters = GetComponent<BehaviorParameters>();
+        _manager = transform.parent.Find("ManagerObject").GetComponent<ObjectsManager>();
+        _config = _manager.GetConfig();
 
-        team = behaviorParameters.TeamId == (int) Team.Hider ? Team.Hider : Team.Seeker;
+        team = _behaviorParameters.TeamId == (int) Team.Hider ? Team.Hider : Team.Seeker;
 
-        MaxStep = area.episodeLength;
-        _forceMultiplier = area.agentsForceMultiplier;
-        _rotationMultiplier = area.agentsRotationMultiplier;
-        area.agents.Add(this);
+        MaxStep = _config.episodeLength;
     }
 
     public bool GetIsPrepared()
     {
-        return isPrepared;
+        return _isPrepared;
     }
 
     public override void OnEpisodeBegin()
     {
-        isPrepared = false;
+        _isPrepared = false;
         if (_carryingMovable != null)
             _carryingMovable.Drop();
         _carryingMovable = null;
-        if (fJoint != null)
-            Destroy(fJoint);
-        fJoint = null;
+        if (_fJoint != null)
+            Destroy(_fJoint);
+        _fJoint = null;
         //fJoint.connectedBody = dummyJoint;
         
-        rBody.angularVelocity = Vector3.zero;
-        rBody.velocity = Vector3.zero;
+        _rBody.angularVelocity = Vector3.zero;
+        _rBody.velocity = Vector3.zero;
         
         transform.Rotate(0,Random.value * 360 - 180f, 0);
 
-        int attempts = area.maxRespawnAttempts;
-        while (area.maxRespawnAttempts == attempts || area.AnyCollisionDetected(transform) && attempts > 0)
+        int attempts = _config.maxRespawnAttempts;
+        while (_config.maxRespawnAttempts == attempts || _manager.GetSpawnHelper().AnyCollisionDetected(transform) && attempts > 0)
         {
             attempts--;
-            transform.localPosition = team == Team.Hider ? area.GetVectorInsideRoom() : area.GetVectorOutsideRoom();
+            transform.localPosition = team == Team.Hider
+                ? _manager.GetSpawnHelper().GetVectorInsideRoom()
+                : _manager.GetSpawnHelper().GetVectorOutsideRoom();
             Physics.SyncTransforms();
         }
         Physics.SyncTransforms();
         //Debug.Log(attempts);
-        isPrepared = true;
-        area.ResetEnv();
+        _isPrepared = true;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        isPrepared = false;
+        _isPrepared = false;
         //Debug.Log(this.GetCumulativeReward());
 
         // Agent position
@@ -98,22 +94,22 @@ public class AgentScript : Agent
         sensor.AddObservation(position.x);
         sensor.AddObservation(position.z);
         // Agent velocity
-        var selfVelocity = rBody.velocity;
+        var selfVelocity = _rBody.velocity;
         sensor.AddObservation(selfVelocity.x);
         sensor.AddObservation(selfVelocity.z);
         // Time left for preparation
-        if (StepCount > area.preparingPhaseLength)
+        if (StepCount > _config.preparingPhaseLength)
             sensor.AddObservation(0.0f);
         else
-            sensor.AddObservation(area.preparingPhaseLength - StepCount);
+            sensor.AddObservation(_config.preparingPhaseLength - StepCount);
         
-        foreach (var obj in viewField.collectVisibleObjects().Where(obj =>
+        foreach (var obj in _viewField.collectVisibleObjects().Where(obj =>
             obj.CompareTag(hiderTag) || obj.CompareTag(seekerTag) || obj.CompareTag(cubeTag) || obj.CompareTag(rampTag)))
         {
             //Debug.Log(obj.tag);
             if (team == Team.Seeker && obj.CompareTag(hiderTag))
             {
-                area.isAnyHiderSeen = true;
+                _manager.GetSeenHolder().isAnyHiderSeen = true;
             }
 
             float[] observations = new float[8];
@@ -142,7 +138,7 @@ public class AgentScript : Agent
     public override void OnActionReceived(ActionBuffers actions)
     {
         //Debug.Log(this.StepCount);
-        if (team == Team.Seeker && StepCount <= area.preparingPhaseLength)
+        if (team == Team.Seeker && StepCount <= _config.preparingPhaseLength)
             return;
         
         Vector3 controlSignal = Vector3.zero;
@@ -150,12 +146,12 @@ public class AgentScript : Agent
         controlSignal.x = actions.ContinuousActions[0];
         controlSignal.z = actions.ContinuousActions[1];
         //Debug.Log(controlSignal);
-        rBody.AddForce(controlSignal * _forceMultiplier);
-        rBody.AddTorque(transform.up * _rotationMultiplier * actions.ContinuousActions[2]);
+        _rBody.AddForce(controlSignal * _config.agentsForceMultiplier);
+        _rBody.AddTorque(transform.up * _config.agentsRotationMultiplier * actions.ContinuousActions[2]);
 
         Vector3 lPos = transform.localPosition; 
         if (lPos.x < -10.0 || lPos.x > 10.0 || lPos.z < -10.0 || lPos.z > 10.0)
-            AddReward(area.penaltyForLeaving * area.rewardScale);
+            AddReward(_config.penaltyForLeaving * _config.rewardScale);
         //Debug.Log("Reward:" + this.GetCumulativeReward().ToString() + team.ToString());
 
         /* Discrete actions mapping:
@@ -171,15 +167,15 @@ public class AgentScript : Agent
         {
             _carryingMovable.Drop();
             _carryingMovable = null;
-            Destroy(fJoint);
-            fJoint = null;
+            Destroy(_fJoint);
+            _fJoint = null;
         }
         else if (_carryingMovable == null)
         {
             GameObject nearestCube = null;
             float minDistToCube = Single.MaxValue;
             
-            foreach (GameObject obj in viewField.collectVisibleObjects())
+            foreach (GameObject obj in _viewField.collectVisibleObjects())
             {
                 if (!obj.CompareTag(cubeTag) && !obj.CompareTag(rampTag)) continue;
 
@@ -192,7 +188,7 @@ public class AgentScript : Agent
             }
             
             // Check if agent see box nearby
-            if (nearestCube == null || area.maxDistToInteractWithBox < minDistToCube)
+            if (nearestCube == null || _config.maxDistToInteractWithBox < minDistToCube)
                 return;
 
             MovableScript movableScript = nearestCube.GetComponent<MovableScript>();
@@ -201,11 +197,11 @@ public class AgentScript : Agent
             {
                 case 2:
                 {
-                    if (!movableScript.Grab(rBody))
+                    if (!movableScript.Grab(_rBody))
                         return;
                     _carryingMovable = movableScript;
-                    fJoint = gameObject.AddComponent<FixedJoint>();
-                    fJoint.connectedBody = nearestCube.GetComponent<Rigidbody>();
+                    _fJoint = gameObject.AddComponent<FixedJoint>();
+                    _fJoint.connectedBody = nearestCube.GetComponent<Rigidbody>();
                     break;
                 }
                 case 3:
