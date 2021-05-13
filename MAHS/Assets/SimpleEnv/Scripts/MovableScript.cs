@@ -21,7 +21,8 @@ public class MovableScript : MonoBehaviour
     private Material _material;
     private Rigidbody _rBody;
     private ObjectsManager _manager; 
-    private Config _config;    
+    private Config _config;
+    private SpawnHelper _spawnHelper;
     
 
     private void ResetLock()
@@ -71,15 +72,11 @@ public class MovableScript : MonoBehaviour
     
     public void Respawn()
     {
-        if (_config == null)
-        {
-            _config = _manager.GetConfig();
-        }
         ResetLock();
         Drop();
         transform.localPosition = objectType == ObjectType.Box ?
-            _manager.GetSpawnHelper().GetVectorInsideRoom() :
-            _manager.GetSpawnHelper().GetVectorOutsideRoom();
+            _spawnHelper.GetVectorInsideRoom() :
+            _spawnHelper.GetVectorOutsideRoom();
 
         if (objectType == ObjectType.Box)
         {
@@ -94,11 +91,11 @@ public class MovableScript : MonoBehaviour
 
         Physics.SyncTransforms();
         int attempts = _config.maxRespawnAttempts;
-        while (_manager.GetSpawnHelper().AnyCollisionDetected(transform) && attempts > 0)
+        while (_spawnHelper.AnyCollisionDetected(transform) && attempts > 0)
         {
             transform.localPosition = objectType == ObjectType.Box ? 
-                _manager.GetSpawnHelper().GetVectorInsideRoom() :
-                _manager.GetSpawnHelper().GetVectorOutsideRoom();
+                _spawnHelper.GetVectorInsideRoom() :
+                _spawnHelper.GetVectorOutsideRoom();
             if (objectType == ObjectType.Box)
                 transform.Rotate(0, Random.value * 360 - 180f, 0);
             else
@@ -118,8 +115,11 @@ public class MovableScript : MonoBehaviour
     {
         _rBody = GetComponentInChildren<Rigidbody>();
         _material = GetComponentInChildren<MeshRenderer>().material;
-        _manager = transform.parent.Find("ManagerObject").GetComponent<ObjectsManager>();
-        _config = _manager.GetConfig(); 
+        
+        var parent = transform.parent;
+        _manager = parent.GetComponent<ObjectsManager>();
+        _config = parent.GetComponent<Config>();
+        _spawnHelper = parent.GetComponent<SpawnHelper>();
         //Respawn();
     }
 

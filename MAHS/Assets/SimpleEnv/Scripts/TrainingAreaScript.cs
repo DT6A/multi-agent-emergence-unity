@@ -10,18 +10,21 @@ public class TrainingAreaScript : MonoBehaviour
     private Config _config;
     private List<MovableScript> _movables;
     private WallsSpawner _wallsSpawner;
+    private SeenHolder _seenHolder;
     
     void Awake()
     {
         Academy.Instance.OnEnvironmentReset += ResetEnv;
         Academy.Instance.AgentPreStep += PreStep;
-        _manager = transform.Find("ManagerObject").GetComponent<ObjectsManager>();
+        
+        _manager = GetComponent<ObjectsManager>();
+        _config = GetComponent<Config>();
+        _wallsSpawner = GetComponent<WallsSpawner>();
+        _seenHolder = GetComponent<SeenHolder>();
     }
     
     public void ResetEnv()
     {
-        _config = _manager.GetConfig();
-        _wallsSpawner = _manager.GetWallsSpawner();
         _agents = _manager.GetAgents();
         _movables = _manager.GetMovables();
 
@@ -40,7 +43,7 @@ public class TrainingAreaScript : MonoBehaviour
 
     void PreStep(int i)
     {
-        var hidersReward = _manager.GetSeenHolder().isAnyHiderSeen ? -1.0f : 1.0f;
+        var hidersReward = _seenHolder.isAnyHiderSeen ? -1.0f : 1.0f;
         hidersReward *= _config.rewardScale;
         
         foreach (var agent in _agents.TakeWhile(agent => agent.StepCount >= _config.preparingPhaseLength))
@@ -50,8 +53,8 @@ public class TrainingAreaScript : MonoBehaviour
             else
                 agent.AddReward(-hidersReward);
         }
-        //Debug.Log("IsSeen:" + _manager.GetSeenHolder().isAnyHiderSeen + i);
-        _manager.GetSeenHolder().isAnyHiderSeen = false;
+        //Debug.Log("IsSeen:" + _seenHolder.isAnyHiderSeen + i);
+        _seenHolder.isAnyHiderSeen = false;
     }
     
     private void Update()

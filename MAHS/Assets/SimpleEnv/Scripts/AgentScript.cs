@@ -24,6 +24,8 @@ public class AgentScript : Agent
     private BufferSensorComponent _bufferSensor;
     private ObjectsManager _manager;
     private Config _config;
+    private SpawnHelper _spawnHelper;
+    private SeenHolder _seenHolder;
 
     private bool _isPrepared;
 
@@ -41,8 +43,12 @@ public class AgentScript : Agent
         _viewField = GetComponent<ViewField>();
         _bufferSensor = GetComponent<BufferSensorComponent>();
         _behaviorParameters = GetComponent<BehaviorParameters>();
-        _manager = transform.parent.Find("ManagerObject").GetComponent<ObjectsManager>();
-        _config = _manager.GetConfig();
+        
+        var parent = transform.parent;
+        _manager = parent.GetComponent<ObjectsManager>();
+        _config = parent.GetComponent<Config>();
+        _spawnHelper = parent.GetComponent<SpawnHelper>();
+        _seenHolder = parent.GetComponent<SeenHolder>();
 
         team = _behaviorParameters.TeamId == (int) Team.Hider ? Team.Hider : Team.Seeker;
 
@@ -71,12 +77,12 @@ public class AgentScript : Agent
         transform.Rotate(0,Random.value * 360 - 180f, 0);
 
         int attempts = _config.maxRespawnAttempts;
-        while (_config.maxRespawnAttempts == attempts || _manager.GetSpawnHelper().AnyCollisionDetected(transform) && attempts > 0)
+        while (_config.maxRespawnAttempts == attempts || _spawnHelper.AnyCollisionDetected(transform) && attempts > 0)
         {
             attempts--;
             transform.localPosition = team == Team.Hider
-                ? _manager.GetSpawnHelper().GetVectorInsideRoom()
-                : _manager.GetSpawnHelper().GetVectorOutsideRoom();
+                ? _spawnHelper.GetVectorInsideRoom()
+                : _spawnHelper.GetVectorOutsideRoom();
             Physics.SyncTransforms();
         }
         Physics.SyncTransforms();
@@ -109,7 +115,7 @@ public class AgentScript : Agent
             //Debug.Log(obj.tag);
             if (team == Team.Seeker && obj.CompareTag(hiderTag))
             {
-                _manager.GetSeenHolder().isAnyHiderSeen = true;
+                _seenHolder.isAnyHiderSeen = true;
             }
 
             float[] observations = new float[8];

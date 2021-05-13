@@ -10,8 +10,8 @@ public class WallsSpawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _manager = transform.parent.Find("ManagerObject").GetComponent<ObjectsManager>();
-        _config = _manager.GetConfig();
+        _manager = GetComponent<ObjectsManager>();
+        _config = GetComponent<Config>();
         _walls = _manager.GetWalls();
     }
 
@@ -22,11 +22,6 @@ public class WallsSpawner : MonoBehaviour
             _walls = _manager.GetWalls();
         }
 
-        if (_config == null)
-        {
-            _config = _manager.GetConfig();
-        }
-        
         // First pair of walls
         var transform1 = _walls[0];
         Vector3 localPosition1;
