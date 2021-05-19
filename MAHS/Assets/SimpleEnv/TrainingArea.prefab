@@ -355,7 +355,7 @@ MonoBehaviour:
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 1
-  m_BehaviorType: 1
+  m_BehaviorType: 0
   m_BehaviorName: HiderBehavior
   TeamId: 0
   m_UseChildSensors: 1
@@ -1327,7 +1327,7 @@ MonoBehaviour:
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 1
-  m_BehaviorType: 1
+  m_BehaviorType: 0
   m_BehaviorName: HiderBehavior
   TeamId: 0
   m_UseChildSensors: 1
@@ -1681,7 +1681,7 @@ MonoBehaviour:
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 1
-  m_BehaviorType: 1
+  m_BehaviorType: 0
   m_BehaviorName: SeekerBehavior
   TeamId: 1
   m_UseChildSensors: 1
@@ -1943,7 +1943,7 @@ MonoBehaviour:
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 1
-  m_BehaviorType: 1
+  m_BehaviorType: 0
   m_BehaviorName: SeekerBehavior
   TeamId: 1
   m_UseChildSensors: 1
@@ -3218,8 +3218,8 @@ MonoBehaviour:
   roomHolesSize: 2.3
   intersectionDistance: 2.3
   maxDistToInteractWithBox: 2
-  episodeLength: 1000
-  preparingPhaseLength: 400
+  episodeLength: 500
+  preparingPhaseLength: 200
 --- !u!114 &1862492722209036679
 MonoBehaviour:
   m_ObjectHideFlags: 0
