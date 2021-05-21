@@ -86,15 +86,13 @@ public class AgentScript : Agent
             Physics.SyncTransforms();
         }
         Physics.SyncTransforms();
-        //Debug.Log(attempts);
         _isPrepared = true;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
         _isPrepared = false;
-        //Debug.Log(this.GetCumulativeReward());
-
+        
         // Agent position
         var position = transform.localPosition;
         sensor.AddObservation(position.x);
@@ -112,10 +110,10 @@ public class AgentScript : Agent
         foreach (var obj in _viewField.collectVisibleObjects().Where(obj =>
             obj.CompareTag(hiderTag) || obj.CompareTag(seekerTag) || obj.CompareTag(cubeTag) || obj.CompareTag(rampTag)))
         {
-            //Debug.Log(obj.tag);
             if (team == Team.Seeker && obj.CompareTag(hiderTag))
             {
                 _seenHolder.isAnyHiderSeen = true;
+                Debug.DrawLine(transform.position, obj.transform.position, Color.red);
             }
 
             float[] observations = new float[8];
@@ -143,7 +141,6 @@ public class AgentScript : Agent
     
     public override void OnActionReceived(ActionBuffers actions)
     {
-        //Debug.Log(this.StepCount);
         if (team == Team.Seeker && StepCount <= _config.preparingPhaseLength)
             return;
         
@@ -151,15 +148,14 @@ public class AgentScript : Agent
         
         controlSignal.x = actions.ContinuousActions[0];
         controlSignal.z = actions.ContinuousActions[1];
-        //Debug.Log(controlSignal);
+        
         _rBody.AddForce(controlSignal * _config.agentsForceMultiplier);
         _rBody.AddTorque(transform.up * _config.agentsRotationMultiplier * actions.ContinuousActions[2]);
 
         Vector3 lPos = transform.localPosition; 
         if (lPos.x < -10.0 || lPos.x > 10.0 || lPos.z < -10.0 || lPos.z > 10.0)
             AddReward(_config.penaltyForLeaving * _config.rewardScale);
-        //Debug.Log("Reward:" + this.GetCumulativeReward().ToString() + team.ToString());
-
+        
         /* Discrete actions mapping:
          *   0 -- no action
          *   1 -- drop box
@@ -168,7 +164,7 @@ public class AgentScript : Agent
          *   4 -- lock box
          */
         int action = actions.DiscreteActions[0];
-        //Debug.Log(action);
+        
         if (_carryingMovable != null && action == 1)
         {
             _carryingMovable.Drop();
@@ -228,7 +224,6 @@ public class AgentScript : Agent
     
     public override void Heuristic(in ActionBuffers actionsOut)
     {
-        //Debug.Log("Heuristic called");
         var continiousActionsOut = actionsOut.ContinuousActions;
         continiousActionsOut[0] = Input.GetAxis("Horizontal");
         continiousActionsOut[1] = Input.GetAxis("Vertical");

@@ -53,7 +53,6 @@ public class TrainingAreaScript : MonoBehaviour
             else
                 agent.AddReward(-hidersReward);
         }
-        //Debug.Log("IsSeen:" + _seenHolder.isAnyHiderSeen + i);
         _seenHolder.isAnyHiderSeen = false;
     }
     

@@ -106,11 +106,9 @@ public class MovableScript : MonoBehaviour
         _rBody.angularVelocity = Vector3.zero;
         _rBody.velocity = Vector3.zero;
         Physics.SyncTransforms();
-        //Debug.Log(attempts);
-        //isSpawnNeeded = false;
     }
-    // Start is called before the first frame update
     
+    // Start is called before the first frame update
     void Start()
     {
         _rBody = GetComponentInChildren<Rigidbody>();
