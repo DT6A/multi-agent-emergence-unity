@@ -50,7 +50,7 @@ At this moment only one environment is implemented.
 ### Simple Environment
 In simple environment there is a room with two holes placed randomly, 2 agents in each team, 2 boxes and ramp. Hiders and boxes spawn randomly inside the room, seekers and the ramp spawn randomly outside the room.
 
-![Simple environment image][https://github.com/DT6A/multi-agent-emergence-unity/img/env3.PNG]
+![Simple environment image](img/env3.PNG?raw=true "Title")
 
 Video demonstration:
 
