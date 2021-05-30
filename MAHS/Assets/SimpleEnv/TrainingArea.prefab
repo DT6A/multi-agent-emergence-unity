@@ -3208,7 +3208,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentsForceMultiplier: 35
   agentsRotationMultiplier: 2
-  rewardScale: 0.1
+  rewardScale: 0.01
   penaltyForLeaving: -5
   spawnInsideRoomWidth: 4
   spawnInsideRoomOffset: 0.75

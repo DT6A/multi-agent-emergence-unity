@@ -10,12 +10,12 @@ public class ObjectsManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        foreach (var agent in FindObjectsOfType(typeof(AgentScript)))
+        foreach (var agent in GetComponentsInChildren(typeof(AgentScript)))
         {
             _agents.Add((AgentScript) agent);
         }
         
-        foreach (var movable in FindObjectsOfType(typeof(MovableScript)))
+        foreach (var movable in GetComponentsInChildren(typeof(MovableScript)))
         {
             _movables.Add((MovableScript) movable);
         }

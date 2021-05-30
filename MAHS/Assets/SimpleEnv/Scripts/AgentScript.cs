@@ -124,8 +124,8 @@ public class AgentScript : Agent
             observations[1] = localPosition.z / 10.0f;
             // Other object velocity
             var velocity = objectRigidBody.velocity;
-            observations[2] = velocity.x / 10.0f;
-            observations[3] = velocity.z / 10.0f;
+            observations[2] = velocity.x / 100.0f;
+            observations[3] = velocity.z / 100.0f;
             // Other object team
             if (obj.CompareTag(hiderTag))
                 observations[4] = 1.0f;
