@@ -92,6 +92,7 @@ Agents learned to escape from the playing area so penalty for leaving was added.
 *Agents rewards during training. Pink line is hider reward, green line is seeker reward*
 
 Video demonstration:
+  
 [![Video demosntration](https://img.youtube.com/vi/G6lHAKiyQIE/0.jpg)](https://www.youtube.com/watch?v=G6lHAKiyQIE)
 
 More complex environments require more computation time and for now results in other setups are not available.
