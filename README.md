@@ -54,8 +54,7 @@ In simple environment there is a room with two holes placed randomly, 2 agents i
 
 Video demonstration:
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Bk1vIVzacZs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
+[![Video demosntration](https://img.youtube.com/vi/Bk1vIVzacZs/0.jpg)](https://www.youtube.com/watch?v=Bk1vIVzacZs)
 ## Installation
 
 ## Experiments
