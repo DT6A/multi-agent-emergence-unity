@@ -1,0 +1,54 @@
+behaviors:
+  SeekerBehavior:
+    trainer_type: ppo
+    threaded: true
+    checkpoint_interval: 500000
+    hyperparameters:
+      batch_size: 10000
+      buffer_size: 75000
+      learning_rate: 3.0e-4
+      beta: 5.0e-4
+      epsilon: 0.2
+      lambd: 0.95
+      num_epoch: 300
+      learning_rate_schedule: linear
+    network_settings:
+      normalize: true
+      hidden_units: 128
+      num_layers: 2
+      memory:
+        memory_size: 100
+    reward_signals:
+      extrinsic:
+        gamma: 0.998
+        strength: 1.0
+    max_steps: 30000000
+    time_horizon: 200
+    summary_freq: 10000
+
+  HiderBehavior:
+    trainer_type: ppo
+    threaded: true
+    checkpoint_interval: 500000
+    hyperparameters:
+      batch_size: 10000
+      buffer_size: 750000
+      learning_rate: 3.0e-4
+      beta: 5.0e-4
+      epsilon: 0.2
+      lambd: 0.95
+      num_epoch: 300
+      learning_rate_schedule: linear
+    network_settings:
+      normalize: true
+      hidden_units: 128
+      num_layers: 2
+      memory:
+        memory_size: 100
+    reward_signals:
+      extrinsic:
+        gamma: 0.998
+        strength: 1.0
+    max_steps: 30000000
+    time_horizon: 200
+    summary_freq: 10000
