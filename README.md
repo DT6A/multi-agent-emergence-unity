@@ -55,6 +55,41 @@ In simple environment there is a room with two holes placed randomly, 2 agents i
 Video demonstration:
 
 [![Video demosntration](https://img.youtube.com/vi/Bk1vIVzacZs/0.jpg)](https://www.youtube.com/watch?v=Bk1vIVzacZs)
+
 ## Installation
+1. Install ML-Agents with [this instruction](https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Installation.md). Version 0.25.0 was used.
+2. Clone this repository with `git clone`.
+3. In Unity Hub go to **Projects**, press **Add** and choose **multi-agent-emergence-unity/MAHS** directory to import.
+
+## Running project
+After installation you are able to open this project in Unity editor. Add as many **Assets/SimpleEnv/TrainingArea** prefabs as you need to the scene or just choose **Assets/SimpleEnv/TrainingScene** with 4 training areas.
+
+Every **TrainingArea** object has attached **Config** script which you can change to configurate the game.
+
+### Training
+After configuring go to Unity **multi-agent-emergence-unity/MAHS** directory in your terminal run `mlagents-learn <your-config> --run-id=<run-name>`. When you see "*Start training by pressing the Play button in the Unity Editor*" press the **Play** button in Unity editor to start training. For more information check [this documentation](https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Training-ML-Agents.md).
+
+### Inference
+1. Copy models that you want from **multi-agent-emergence-unity/MAHS/results/<run-name>** to the Unity editor
+2. For every agent in their **Behavior Parameters**  attach corresponding model to the **Model** and change **Behavior Type** to **Inference**
+3. Run with the **Play** button
+
+Check [this documentation](https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Getting-Started.md) if you need.
+
+### Training on a remote machine
+[Training on Amazon Web Service](https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Training-on-Amazon-Web-Service.md), [Training on Microsoft Azure](https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Training-on-Microsoft-Azure.md).
 
 ## Experiments
+At this moment interesting results were only achieved in the simplest setup with one agent in each team and one wall in the center of playing area.
+
+Agents learned to escape from the playing area so penalty for leaving was added. There were 4 different stages in agents behavior:
+1. Random actions
+2. Seeker start chasing hider
+3. Hider learns to escape from playing area sometimes
+4. Seeker learns to await hider at the escape spot
+
+![Simple environment image](img/1vs1.PNG?raw=true "Title")
+*Agents rewards during training. Pink line is hider reward, green line is seeker reward*
+[![Video demosntration](https://img.youtube.com/vi/G6lHAKiyQIE/0.jpg)](https://www.youtube.com/watch?v=G6lHAKiyQIE)
+
+More complex environments require more computation time and for now results in other setups are not available.
