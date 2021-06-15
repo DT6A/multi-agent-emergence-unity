@@ -11,6 +11,7 @@ public class TrainingAreaScript : MonoBehaviour
     private List<MovableScript> _movables;
     private WallsSpawner _wallsSpawner;
     private SeenHolder _seenHolder;
+    private int _reset_timer = 0;
     
     void Awake()
     {
@@ -28,9 +29,10 @@ public class TrainingAreaScript : MonoBehaviour
         _agents = _manager.GetAgents();
         _movables = _manager.GetMovables();
 
+        Debug.Log("Trying reset");
         if (!_agents.All(agent => agent.GetIsPrepared()))
             return;
-
+        Debug.Log("All ready");
         // Randomize holes in the room walls
         _wallsSpawner.Respawn();
         
@@ -39,6 +41,8 @@ public class TrainingAreaScript : MonoBehaviour
         {
             movable.Respawn();
         }
+
+        _reset_timer = 0;
     }
 
     void PreStep(int i)
@@ -56,8 +60,16 @@ public class TrainingAreaScript : MonoBehaviour
         _seenHolder.isAnyHiderSeen = false;
     }
     
+    void FixedUpdate()
+    {
+        _reset_timer += 1;
+        if (_reset_timer >= _config.episodeLength)
+        {
+            ResetEnv();
+        }
+    }
     private void Update()
     {
-        ResetEnv();
+        //ResetEnv();
     }
 }
